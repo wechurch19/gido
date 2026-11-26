@@ -168,6 +168,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .netbar{position:fixed;left:0;right:0;top:0;z-index:70;display:flex;gap:10px;align-items:center;justify-content:center;padding:10px 12px calc(10px);
   background:rgba(120,30,30,.94);font-family:var(--sans);font-size:13px;line-height:1.4}
+.netbar a{flex:none;color:#fff;text-decoration:underline;font-weight:700}
 .netbar button{flex:none;background:var(--lime);color:var(--navy);font-weight:700;border-radius:99px;padding:6px 14px}
 @media (min-width:700px){.screen{padding-top:48px}}
 </style>
@@ -329,7 +330,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
   </div>
 </div>
 
-<div class="netbar" id="netbar" hidden><span id="net-msg"></span><button id="net-retry" type="button">다시 시도</button></div>
+<div class="netbar" id="netbar" hidden><span id="net-msg"></span><a id="net-test" target="_blank" rel="noopener">서버 확인</a><button id="net-retry" type="button">다시 시도</button></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -388,7 +389,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 
   /* ── 서버 호출 ── */
   var DETAIL = '';
-  function showNet(msg) { DETAIL = msg; $('#net-msg').textContent = '서버에 연결하지 못했어요 · ' + msg; $('#netbar').hidden = false; }
+  function showNet(msg) { DETAIL = msg; $('#net-test').href = API_URL + '?fn=getPublicData'; $('#net-msg').textContent = '서버에 연결하지 못했어요 · ' + msg; $('#netbar').hidden = false; }
   function hideNet() { $('#netbar').hidden = true; }
   // 읽기는 GET, 쓰기는 POST(text/plain → CORS 사전요청 없음). Apps Script 웹앱 표준 방식
   function call(name, args, ok, fail, quiet) {
