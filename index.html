@@ -124,7 +124,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 
 /* 이달의 도고기도 */
 .mc-head{display:flex;align-items:center;gap:12px}
-.mc-head h3{margin:0;font-size:17px;font-weight:600;line-height:1.35;flex:1}
+.mc-head h3{word-break:keep-all;margin:0;font-size:17px;font-weight:600;line-height:1.35;flex:1}
 .num{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--navy);font-family:var(--sans);font-weight:700}
 .pr{margin:0;white-space:pre-wrap;word-break:keep-all;font-size:15.5px}
 .tp{margin:0;padding-left:20px;font-size:15.5px;word-break:keep-all}
@@ -172,6 +172,9 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 .toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:60;opacity:0;pointer-events:none;
   background:rgba(8,30,70,.94);border:1.5px solid var(--line);color:#fff;font-family:var(--sans);font-size:14.5px;padding:12px 18px;border-radius:99px;max-width:90vw;text-align:center;transition:opacity .15s,transform .15s}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.netbar{position:fixed;left:0;right:0;top:0;z-index:70;display:flex;gap:10px;align-items:center;justify-content:center;padding:10px 12px calc(10px);
+  background:rgba(120,30,30,.94);font-family:var(--sans);font-size:13px;line-height:1.4}
+.netbar button{flex:none;background:var(--lime);color:var(--navy);font-weight:700;border-radius:99px;padding:6px 14px}
 @media (min-width:700px){.screen{padding-top:28px}}
 </style>
 </head>
@@ -309,13 +312,14 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
   </div>
 </div>
 
+<div class="netbar" id="netbar" hidden><span id="net-msg"></span><button id="net-retry" type="button">다시 시도</button></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
 (function () {
   'use strict';
   /* ★ Apps Script 웹앱 배포 URL(…/exec)을 여기에 붙여넣으세요 */
-  var API_URL = 'https://script.google.com/macros/s/AKfycbxxRNJmHH40K9LY-rjKAEBHzE0l5sOU9WOhy1Cp3xwV4TU8-7GAvApyR9twQDAeZtxs/exec';
+  var API_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
   var DAYS = ['월', '화', '수', '목', '금', '토'];
   var SCREENS = ['entry', 'home', 'week', 'monthly', 'request'];
   var PARENT = { home: 'entry', week: 'home', monthly: 'home', request: 'home' };
@@ -335,6 +339,23 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
   })();
 
   try { DATA = JSON.parse(store.getItem('cache_data') || 'null'); } catch (e) { DATA = null; }
+  var STATUS = DATA ? 'ok' : 'loading';
+  var TITLES = ['하나님 나라와 뜻을 위한 기도', '이 땅을 위한 기도', '교회를 위한 기도', '성도를 위한 기도'];
+  function p2(n) { return (n < 10 ? '0' : '') + n; }
+  function skeleton() {
+    var s = new Date(); s.setDate(s.getDate() - s.getDay());
+    var e = new Date(s.getTime() + 6 * 86400000);
+    return {
+      week: { key: s.getFullYear() + '-' + p2(s.getMonth() + 1) + '-' + p2(s.getDate()),
+              label: (s.getMonth() + 1) + '월 ' + s.getDate() + '일 ~ ' + (e.getMonth() + 1) + '월 ' + e.getDate() + '일',
+              names: ['', '', ''], done: [] },
+      month: { m: new Date().getMonth() + 1, items: TITLES.map(function (t) { return { title: t, prayer: '', topics: '' }; }), pub: [] },
+      sk: true
+    };
+  }
+  if (!DATA || !DATA.week) { DATA = skeleton(); STATUS = 'loading'; }
+  function waiting() { return DATA.sk && STATUS !== 'ok'; }
+  function waitMsg() { return STATUS === 'error' ? '서버에 연결되면 표시돼요. 위의 ‘다시 시도’를 눌러 주세요.' : '불러오는 중…'; }
 
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
@@ -349,16 +370,33 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
   }
 
   /* ── 서버 호출 ── */
-  function call(name, args, ok, fail) {
-    if (!API_URL || API_URL.indexOf('PASTE_') === 0) { toast('index.html 의 API_URL 을 설정해 주세요.'); if (fail) fail(); return; }
-    // text/plain 으로 보내 CORS 사전요청(preflight)을 피함 — Apps Script 웹앱 표준 방식
-    fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn: name, args: args }) })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (j && j.error) throw new Error(j.error);
-        if (ok) ok(j.result);
-      })
-      .catch(function () { toast('연결이 불안정해요. 잠시 후 다시 시도해 주세요.'); if (fail) fail(); });
+  var DETAIL = '';
+  function showNet(msg) { DETAIL = msg; $('#net-msg').textContent = '서버에 연결하지 못했어요 · ' + msg; $('#netbar').hidden = false; }
+  function hideNet() { $('#netbar').hidden = true; }
+  // 읽기는 GET, 쓰기는 POST(text/plain → CORS 사전요청 없음). Apps Script 웹앱 표준 방식
+  function call(name, args, ok, fail, quiet) {
+    if (!API_URL || API_URL.indexOf('PASTE_') === 0) {
+      showNet('index.html 의 API_URL 이 설정되지 않았어요'); if (fail) fail(); return;
+    }
+    var req = name === 'getPublicData'
+      ? fetch(API_URL + (API_URL.indexOf('?') < 0 ? '?' : '&') + 'fn=getPublicData&_=' + Date.now())
+      : fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn: name, args: args }) });
+    req.then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    }).then(function (txt) {
+      var j; try { j = JSON.parse(txt); } catch (e) { throw new Error('BADJSON'); }
+      if (j && j.error) throw new Error('서버 오류: ' + j.error);
+      hideNet();
+      if (ok) ok(j.result);
+    }).catch(function (err) {
+      var m = String(err && err.message || err);
+      if (m === 'BADJSON') m = '응답 형식이 달라요(Code.gs를 새 버전으로 다시 배포했는지 확인)';
+      else if (/Failed to fetch|NetworkError|Load failed/i.test(m)) m = '주소에 닿지 못했어요(URL과 배포 접근권한 ‘모든 사용자’ 확인)';
+      showNet(m);
+      if (!quiet) toast('저장하지 못했어요. 연결을 확인해 주세요.');
+      if (fail) fail();
+    });
   }
   function write(name, args, ok) {
     inflight++;
@@ -375,11 +413,15 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     if (res.ok === false) { toast(res.msg || '처리하지 못했어요.'); return; }
     if (res.data) setData(res.data);
   }
-  function setData(d) { DATA = d; lastFetch = Date.now(); try { store.setItem('cache_data', JSON.stringify(d)); } catch (e) {} renderAll(); }
-  function refresh() {
-    if (Date.now() - lastFetch < 10000) return;
+  function setData(d) { DATA = d; STATUS = 'ok'; lastFetch = Date.now(); try { store.setItem('cache_data', JSON.stringify(d)); } catch (e) {} renderAll(); }
+  function loadData() {
     lastFetch = Date.now();
-    call('getPublicData', [], function (d) { if (d && d.week && inflight === 0) setData(d); });
+    call('getPublicData', [], function (d) {
+      if (d && d.week && inflight === 0) setData(d);
+    }, function () { if (DATA.sk) { STATUS = 'error'; renderAll(); } }, true);
+  }
+  function refresh() {
+    if (STATUS === 'error' || Date.now() - lastFetch >= 10000) loadData();
   }
 
   /* ── 화면 이동 (서버 왕복 없음) ── */
@@ -439,7 +481,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     $('#wk-count').textContent = L.length + '명';
     $('#wk-done').innerHTML = L.length ? L.map(function (x) {
       return '<span class="chip">' + esc(x.n) + (ADMIN ? '<button class="x" type="button" data-dn="' + esc(x.n) + '" aria-label="삭제">✕</button>' : '') + '</span>';
-    }).join('') : '<p class="empty">아직 기도를 마친 성도가 없어요. 첫 번째가 되어 주세요!</p>';
+    }).join('') : '<p class="empty">' + (waiting() ? waitMsg() : '아직 기도를 마친 성도가 없어요. 첫 번째가 되어 주세요!') + '</p>';
   }
   function setDoneBtn() {
     var b = $('#wk-complete'), n = $('#wk-name').value.trim();
@@ -463,14 +505,14 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
       (ADMIN ? '<button class="mini" type="button" data-edit="' + i + '">수정</button>' : '') + '</div>';
     if (it.prayer) h += '<span class="lbl">기도</span><p class="pr">' + esc(it.prayer) + '</p>';
     if (it.topics) h += '<span class="lbl">기도제목</span><ul class="tp">' + lines(it.topics) + '</ul>';
-    if (!it.prayer && !it.topics && i !== 3) h += '<p class="empty" style="margin-top:10px">아직 등록된 내용이 없어요.</p>';
+    if (!it.prayer && !it.topics && i !== 3) h += '<p class="empty" style="margin-top:10px">' + (waiting() ? waitMsg() : '아직 등록된 내용이 없어요.') + '</p>';
     if (i === 3) {
       var P = DATA.month.pub;
       h += '<span class="lbl">함께 나눈 기도제목</span>';
       h += P.length ? '<ul class="pubs">' + P.map(function (p) {
         return '<li><b>' + esc(p.n) + '</b><span>' + esc(p.t) + '</span>' +
           (ADMIN ? '<button class="x" type="button" data-rid="' + esc(p.id) + '" aria-label="삭제">✕</button>' : '') + '</li>';
-      }).join('') + '</ul>' : '<p class="empty">아직 올라온 기도제목이 없어요. ‘도고기도 요청’에서 전체공개로 올리면 여기에 나타나요.</p>';
+      }).join('') + '</ul>' : '<p class="empty">' + (waiting() ? waitMsg() : '아직 올라온 기도제목이 없어요. ‘도고기도 요청’에서 전체공개로 올리면 여기에 나타나요.') + '</p>';
     }
     el.innerHTML = h;
   }
@@ -648,13 +690,10 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
   $('#wk-name').value = saved; $('#rq-name').value = saved;
   $('#rq-help').textContent = HELP.all;
   try { history.replaceState({ s: 'entry' }, ''); } catch (e) {}
-  if (DATA) renderAll();
-  else {
-    $('#wk-done').innerHTML = '<p class="empty">불러오는 중…</p>';
-    for (var q = 0; q < 4; q++) $('#mc-' + q).innerHTML = '<p class="empty">불러오는 중…</p>';
-  }
+  $('#net-retry').addEventListener('click', function () { hideNet(); STATUS = DATA.sk ? 'loading' : STATUS; renderAll(); loadData(); });
+  renderAll();
   // 입장 화면을 보는 동안 미리 최신 데이터를 받아 둠
-  call('getPublicData', [], function (d) { if (d && d.week) setData(d); });
+  loadData();
 })();
 </script>
 </body>
