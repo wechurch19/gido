@@ -25,13 +25,14 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{margin:0;min-height:100%}
-body{font-family:var(--serif);color:#fff;background:#0a4a9a;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html,body{margin:0;min-height:100%;overscroll-behavior:none}
+html{background:linear-gradient(160deg,#0b3f9c 0%,#0a5f9a 38%,#0b7a6a 68%,#157f3a 100%) fixed #157f3a}
+body{font-family:var(--serif);color:#fff;background:transparent;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
 
 /* 배경: 청록 그라데이션 + 빛나는 십자가 + 먼지 입자 */
-.bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:
+.bg{position:fixed;left:0;right:0;top:0;bottom:-200px;z-index:0;overflow:hidden;background:
   radial-gradient(120% 70% at 10% 0%,rgba(40,110,255,.55),transparent 60%),
   radial-gradient(90% 60% at 100% 100%,rgba(30,170,70,.75),transparent 65%),
   linear-gradient(160deg,#0b3f9c 0%,#0a5f9a 38%,#0b7a6a 68%,#157f3a 100%)}
@@ -103,11 +104,23 @@ button.card:active{transform:scale(.98)}
 .nm-in:focus,.inp:focus{border-color:var(--lime);background:rgba(255,255,255,.18)}
 ::placeholder{color:rgba(255,255,255,.55)}
 textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
-.days{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:6px}
-.day{min-height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--glass);font-family:var(--sans);font-weight:700;font-size:17px;position:relative;transition:transform .08s}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px}
+.day{min-height:52px;padding:0;border-radius:14px;border:1.5px solid var(--line);background:var(--glass);font-family:var(--sans);font-weight:700;font-size:15px;position:relative;transition:transform .08s}
 .day:active{transform:scale(.94)}
 .day.on{background:var(--lime);color:var(--navy);border-color:var(--lime)}
 .day.today::after{content:"";position:absolute;bottom:5px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+.phs{margin:0 0 6px}
+.ph{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;border:1.5px solid var(--line);background:var(--glass);display:flex;align-items:center;justify-content:center}
+.ph-img{position:absolute;inset:0;width:100%;height:100%;padding:0}
+.ph-img img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-empty{font-family:var(--sans);font-size:12px;color:rgba(255,255,255,.55);text-align:center}
+.ph-empty i{display:block;font-style:normal;font-size:30px;line-height:1;opacity:.6;margin-bottom:2px}
+.ph-bar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:4px;padding:5px;background:linear-gradient(transparent,rgba(0,20,60,.75))}
+.ph-bar button{flex:1;font-family:var(--sans);font-size:12px;font-weight:700;padding:6px 0;border-radius:8px;background:rgba(255,255,255,.88);color:var(--navy)}
+.ph-bar button.del{background:rgba(255,200,200,.92);color:#7a1010}
+.ph-add{font-family:var(--sans);font-weight:700;font-size:13px;color:var(--navy);background:var(--lime);border-radius:99px;padding:8px 12px}
+#lb{cursor:zoom-out}
+#lb img{max-width:94vw;max-height:84vh;border-radius:14px;box-shadow:0 10px 50px rgba(0,0,0,.5)}
 .cap{font-size:13.5px;color:rgba(255,255,255,.85);margin:8px 0 16px;text-align:center}
 .row{display:flex;gap:10px}
 .row .inp{flex:1;min-width:0}
@@ -168,6 +181,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .netbar{position:fixed;left:0;right:0;top:0;z-index:70;display:flex;gap:10px;align-items:center;justify-content:center;padding:10px 12px calc(10px);
   background:rgba(120,30,30,.94);font-family:var(--sans);font-size:13px;line-height:1.4}
+.netbar a{flex:none;color:#fff;text-decoration:underline;font-weight:700}
 .netbar button{flex:none;background:var(--lime);color:var(--navy);font-weight:700;border-radius:99px;padding:6px 14px}
 @media (min-width:700px){.screen{padding-top:48px}}
 </style>
@@ -222,7 +236,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     <h2 class="ptitle">[그래서 <em>기도</em>]</h2>
     <button class="card" type="button" data-go="week">
       <span class="ico">3</span>
-      <span><h3>이번 주 [3.3.3]</h3><p>3명 · 3일 · 3분 기도</p></span>
+      <span><h3>이번 주 [3.3.7]</h3><p>3명 · 매일 1분 · 7일 기도</p></span>
       <span class="arrow">›</span>
     </button>
     <button class="card" type="button" data-go="monthly">
@@ -243,11 +257,13 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
       <button class="back" type="button" data-go="home">‹ 뒤로</button>
       <span class="badge adm-only" hidden>관리자 모드</span>
     </div>
-    <h2 class="ptitle">이번 주 [3.3.3]</h2>
+    <h2 class="ptitle">이번 주 [3.3.7]</h2>
     <div class="week" id="wk-label"></div>
-    <p class="note">*333이란? 3명을 위해서 3일 동안 1명당 1분씩 총 3분을 기도하는 운동입니다.</p>
+    <p class="note">*3.3.7이란? 3명을 매일 1분씩 3분, 7일간 기도하는 운동입니다.</p>
 
     <div class="names" id="wk-names"></div>
+    <div class="names phs" id="wk-photos"></div>
+    <input type="file" id="ph-file" accept="image/*" hidden>
     <button class="btn sm adm-only" id="wk-names-save" type="button" hidden style="width:100%;margin:6px 0 4px">333 명단 저장</button>
 
     <div class="sec" style="margin-top:20px">기도한 날</div>
@@ -329,15 +345,16 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
   </div>
 </div>
 
-<div class="netbar" id="netbar" hidden><span id="net-msg"></span><button id="net-retry" type="button">다시 시도</button></div>
+<div class="netbar" id="netbar" hidden><span id="net-msg"></span><a id="net-test" target="_blank" rel="noopener">서버 확인</a><button id="net-retry" type="button">다시 시도</button></div>
+<div id="lb" class="modal" hidden><img id="lb-img" alt=""></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
 (function () {
   'use strict';
   /* ★ Apps Script 웹앱 배포 URL(…/exec)을 여기에 붙여넣으세요 */
-  var API_URL = 'https://script.google.com/macros/s/AKfycbw4-3qzULlJRyw44dteNpweruPQTGCwqa1OIGiFcrAWo5jXXpeG7tx2U8RlQ60URkKx/exec';
-  var DAYS = ['월', '화', '수', '목', '금', '토'];
+  var API_URL = 'https://script.google.com/macros/s/AKfycbxmerNYw9eBmwNWv24vxUJ8q7P90JUOqDhyY-0pSGRU8h4CIQ0p3EI6vs7V4ysXNl_z/exec';
+  var DAYS = ['주일', '월', '화', '수', '목', '금', '토'];
   var SCREENS = ['entry', 'home', 'week', 'monthly', 'request'];
   var PARENT = { home: 'entry', week: 'home', monthly: 'home', request: 'home' };
   var HELP = {
@@ -352,7 +369,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 
   var store = (function () {
     try { var k = '__p'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return localStorage; }
-    catch (e) { var m = {}; return { getItem: function (k) { return k in m ? m[k] : null; }, setItem: function (k, v) { m[k] = String(v); } }; }
+    catch (e) { var m = {}; return { getItem: function (k) { return k in m ? m[k] : null; }, setItem: function (k, v) { m[k] = String(v); }, removeItem: function (k) { delete m[k]; } }; }
   })();
 
   try { DATA = JSON.parse(store.getItem('cache_data') || 'null'); } catch (e) { DATA = null; }
@@ -365,7 +382,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     return {
       week: { key: s.getFullYear() + '-' + p2(s.getMonth() + 1) + '-' + p2(s.getDate()),
               label: (s.getMonth() + 1) + '월 ' + s.getDate() + '일 ~ ' + (e.getMonth() + 1) + '월 ' + e.getDate() + '일',
-              names: ['', '', ''], done: [] },
+              names: ['', '', ''], done: [], photos: ['', '', ''] },
       month: { m: new Date().getMonth() + 1, items: TITLES.map(function (t) { return { title: t, prayer: '', topics: '' }; }), pub: [] },
       sk: true
     };
@@ -388,15 +405,16 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 
   /* ── 서버 호출 ── */
   var DETAIL = '';
-  function showNet(msg) { DETAIL = msg; $('#net-msg').textContent = '서버에 연결하지 못했어요 · ' + msg; $('#netbar').hidden = false; }
+  function showNet(msg) { DETAIL = msg; $('#net-test').href = API_URL + '?fn=getPublicData'; $('#net-msg').textContent = '서버에 연결하지 못했어요 · ' + msg; $('#netbar').hidden = false; }
   function hideNet() { $('#netbar').hidden = true; }
   // 읽기는 GET, 쓰기는 POST(text/plain → CORS 사전요청 없음). Apps Script 웹앱 표준 방식
   function call(name, args, ok, fail, quiet) {
     if (!API_URL || API_URL.indexOf('PASTE_') === 0) {
       showNet('index.html 의 API_URL 이 설정되지 않았어요'); if (fail) fail(); return;
     }
-    var req = name === 'getPublicData'
-      ? fetch(API_URL + (API_URL.indexOf('?') < 0 ? '?' : '&') + 'fn=getPublicData&_=' + Date.now())
+    var isGet = name === 'getPublicData' || name === 'getPhoto';
+    var req = isGet
+      ? fetch(API_URL + (API_URL.indexOf('?') < 0 ? '?' : '&') + 'fn=' + name + (name === 'getPhoto' ? '&a=' + encodeURIComponent(args[0]) : '') + '&_=' + Date.now())
       : fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn: name, args: args }) });
     req.then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -415,9 +433,9 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
       if (fail) fail();
     });
   }
-  function write(name, args, ok) {
+  function write(name, args, ok, onfail) {
     inflight++;
-    call(name, args, function (res) { inflight--; if (ok) ok(res); else applyData(res); }, function () { inflight--; });
+    call(name, args, function (res) { inflight--; if (ok) ok(res); else applyData(res); }, function () { inflight--; if (onfail) onfail(); });
   }
   function authFail(res) {
     if (res && res.auth) {
@@ -471,7 +489,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
   function renderWeek() {
     var w = DATA.week;
     $('#wk-label').textContent = w.label;
-    renderNames(); renderDays(); renderDone(); setDoneBtn();
+    renderNames(); renderPhotos(); renderDays(); renderDone(); setDoneBtn();
   }
   function renderNames() {
     var box = $('#wk-names'), w = DATA.week;
@@ -486,11 +504,82 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
       }).join('');
     }
   }
-  function myDays() { try { return JSON.parse(store.getItem('d_' + DATA.week.key) || '[]'); } catch (e) { return []; } }
+  /* ── 사진 ── */
+  var PHOTO = [null, null, null], phFetching = ['', '', ''];
+  for (var pi = 0; pi < 3; pi++) { try { var po = JSON.parse(store.getItem('ph_' + pi) || 'null'); if (po && po.v && po.data) PHOTO[pi] = po; } catch (e) {} }
+  function savePhotoCache(i) {
+    try { if (PHOTO[i]) store.setItem('ph_' + i, JSON.stringify(PHOTO[i])); else store.removeItem('ph_' + i); } catch (e) {}
+  }
+  function fetchPhoto(i, v) {
+    if (phFetching[i] === v) return;
+    phFetching[i] = v;
+    call('getPhoto', [i + 1], function (res) {
+      phFetching[i] = '';
+      if (!res || !res.ok) return;
+      if (res.v && res.data) {
+        PHOTO[i] = { v: res.v, data: res.data };
+        if (DATA.week.photos && DATA.week.photos[i] !== 'local') DATA.week.photos[i] = res.v;
+      } else { PHOTO[i] = null; if (DATA.week.photos) DATA.week.photos[i] = ''; }
+      savePhotoCache(i); renderPhotos();
+    }, function () { phFetching[i] = ''; }, true);
+  }
+  function renderPhotos() {
+    var box = $('#wk-photos'), h = '';
+    for (var i = 0; i < 3; i++) {
+      var v = DATA.sk ? (PHOTO[i] ? PHOTO[i].v : '') : ((DATA.week.photos || [])[i] || '');
+      var p = PHOTO[i];
+      if (!v && p && !DATA.sk) { PHOTO[i] = null; p = null; savePhotoCache(i); }
+      if (v && (!p || p.v !== v) && v !== 'local') fetchPhoto(i, v);
+      var inner;
+      if (p) inner = '<button type="button" class="ph-img" data-ph-view="' + i + '" aria-label="사진 크게 보기"><img alt="" src="' + p.data + '"></button>';
+      else if (v) inner = '<span class="ph-empty">불러오는 중…</span>';
+      else if (ADMIN) inner = '<button type="button" class="ph-add" data-ph-add="' + i + '">+ 사진</button>';
+      else inner = '<span class="ph-empty"><i>🙂</i>사진</span>';
+      if (ADMIN && (p || v)) inner += '<div class="ph-bar"><button type="button" data-ph-add="' + i + '">변경</button><button type="button" class="del" data-ph-del="' + i + '">삭제</button></div>';
+      h += '<div class="ph">' + inner + '</div>';
+    }
+    box.innerHTML = h;
+  }
+  function compressImage(file, cb) {
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function () {
+      URL.revokeObjectURL(url);
+      var w = img.naturalWidth, h = img.naturalHeight, s0 = Math.min(1, 640 / Math.max(w, h));
+      var tries = [[s0, .78], [s0, .65], [s0 * .8, .6], [s0 * .6, .55]], out = '';
+      for (var k = 0; k < tries.length; k++) {
+        var c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(w * tries[k][0])); c.height = Math.max(1, Math.round(h * tries[k][0]));
+        var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+        out = c.toDataURL('image/jpeg', tries[k][1]);
+        if (out.length <= 170000) break;
+      }
+      cb(out.length <= 170000 ? out : '');
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); cb(''); };
+    img.src = url;
+  }
+  var phSlot = 0;
+  function uploadPhoto(i, file) {
+    toast('사진을 올리는 중…');
+    compressImage(file, function (dataUrl) {
+      if (!dataUrl) { toast('이 사진은 올릴 수 없어요. 다른 사진을 선택해 주세요.'); return; }
+      PHOTO[i] = { v: 'local', data: dataUrl };
+      DATA.week.photos = DATA.week.photos || ['', '', '']; DATA.week.photos[i] = 'local';
+      renderPhotos();
+      write('savePhoto', [PW, i + 1, dataUrl], function (res) {
+        if (res && res.ok && res.data) {
+          PHOTO[i] = { v: res.data.week.photos[i], data: dataUrl }; savePhotoCache(i);
+          applyData(res); toast('사진을 저장했어요.');
+        } else { applyData(res); PHOTO[i] = null; loadData(); }
+      }, function () { PHOTO[i] = null; DATA.week.photos[i] = ''; renderPhotos(); loadData(); });
+    });
+  }
+
+  function myDays() { try { return JSON.parse(store.getItem('d2_' + DATA.week.key) || '[]'); } catch (e) { return []; } }
   function renderDays() {
     var md = myDays(), td = new Date().getDay();
     $('#wk-days').innerHTML = DAYS.map(function (d, i) {
-      return '<button type="button" class="day' + (md.indexOf(i) > -1 ? ' on' : '') + (td === i + 1 ? ' today' : '') + '" data-i="' + i + '">' + d + '</button>';
+      return '<button type="button" class="day' + (md.indexOf(i) > -1 ? ' on' : '') + (td === i ? ' today' : '') + '" data-i="' + i + '">' + d + '</button>';
     }).join('');
   }
   function renderDone() {
@@ -621,7 +710,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     if (t.classList.contains('day')) {
       var i = Number(t.getAttribute('data-i')), md = myDays(), p = md.indexOf(i);
       if (p > -1) md.splice(p, 1); else md.push(i);
-      store.setItem('d_' + DATA.week.key, JSON.stringify(md));
+      store.setItem('d2_' + DATA.week.key, JSON.stringify(md));
       t.classList.toggle('on'); return;
     }
     if (t.id === 'wk-complete') {
@@ -635,6 +724,20 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
       store.setItem('p_name', n); store.setItem('c_' + DATA.week.key, n);
       renderDone(); setDoneBtn(); toast('기도 완료! 수고하셨어요 🙏');
       write('completePrayer', [n, md2]);
+      return;
+    }
+    if (t.hasAttribute('data-ph-add')) { phSlot = Number(t.getAttribute('data-ph-add')); var fi = $('#ph-file'); fi.value = ''; fi.click(); return; }
+    if (t.hasAttribute('data-ph-del')) {
+      var di = Number(t.getAttribute('data-ph-del'));
+      ask('이 사진을 삭제할까요?', function () {
+        PHOTO[di] = null; DATA.week.photos[di] = ''; savePhotoCache(di); renderPhotos();
+        write('deletePhoto', [PW, di + 1], null, function () { loadData(); });
+      });
+      return;
+    }
+    if (t.hasAttribute('data-ph-view')) {
+      var vp = PHOTO[Number(t.getAttribute('data-ph-view'))];
+      if (vp) { $('#lb-img').src = vp.data; $('#lb').hidden = false; }
       return;
     }
     if (t.id === 'wk-names-save') {
@@ -701,6 +804,11 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     else if (e.key === 'Escape') closeKp();
   });
   $('#wk-name').addEventListener('input', setDoneBtn);
+  $('#lb').addEventListener('click', function () { $('#lb').hidden = true; });
+  $('#ph-file').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (f && ADMIN) uploadPhoto(phSlot, f);
+  });
 
   /* ── 시작 ── */
   var saved = store.getItem('p_name') || '';
