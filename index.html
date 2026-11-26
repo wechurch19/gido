@@ -259,12 +259,12 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     </div>
     <h2 class="ptitle">이번 주 [3.3.7]</h2>
     <div class="week" id="wk-label"></div>
-    <p class="note">*3.3.7이란? 3명을 매일 1분씩 3분, 7일간 기도하는 운동입니다.</p>
+    <p class="note">*3.3.7이란? 3명의 성도를 한 사람당 1분씩 총 3분, 7일간 기도하는 운동입니다.</p>
 
     <div class="names" id="wk-names"></div>
     <div class="names phs" id="wk-photos"></div>
     <input type="file" id="ph-file" accept="image/*" hidden>
-    <button class="btn sm adm-only" id="wk-names-save" type="button" hidden style="width:100%;margin:6px 0 4px">333 명단 저장</button>
+    <button class="btn sm adm-only" id="wk-names-save" type="button" hidden style="width:100%;margin:6px 0 4px">명단 저장</button>
 
     <div class="sec" style="margin-top:20px">기도한 날</div>
     <div class="days" id="wk-days"></div>
@@ -742,7 +742,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     }
     if (t.id === 'wk-names-save') {
       var ins = $$('#wk-names .nm-in').map(function (x) { return x.value.trim(); });
-      DATA.week.names = ins; toast('333 명단을 저장했어요.');
+      DATA.week.names = ins; toast('명단을 저장했어요.');
       write('saveWeekNames', [PW, ins]); return;
     }
     if (t.hasAttribute('data-dn')) {
