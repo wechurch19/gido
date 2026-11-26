@@ -43,22 +43,16 @@ button{cursor:pointer;border:0;background:none;padding:0}
   background-size:90px 110px,170px 140px,260px 210px;
   background-position:10px 20px,60px 70px,120px 30px}
 @keyframes tw{0%,100%{opacity:.5}50%{opacity:.85}}
-.cross{position:absolute;left:50%;top:5vh;width:0;height:min(36vh,320px);transition:opacity .25s}
-.cross::before{content:"";position:absolute;left:-5px;top:0;width:10px;height:100%;border-radius:6px;
-  background:linear-gradient(#fff,rgba(255,255,255,.92) 55%,rgba(255,255,255,0));
-  box-shadow:0 0 14px 6px rgba(150,210,255,.85),0 0 70px 26px rgba(80,160,255,.5)}
-.cross::after{content:"";position:absolute;left:-230px;width:460px;top:28%;height:6px;border-radius:6px;
-  background:linear-gradient(90deg,transparent,#fff 50%,transparent);
-  box-shadow:0 0 14px 5px rgba(150,210,255,.75)}
-body.inner .cross{opacity:.28}
+.cross{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 2vh);width:min(92vw,420px);height:min(92vw,420px);transform:translateX(-50%);overflow:visible;transition:opacity .25s}
+body.inner .cross{opacity:.22}
 
 #app{position:relative;z-index:1;max-width:520px;margin:0 auto}
-.screen{display:none;min-height:100vh;min-height:100dvh;padding:18px 18px calc(36px + env(safe-area-inset-bottom))}
+.screen{display:none;min-height:100vh;min-height:100dvh;padding:calc(env(safe-area-inset-top,0px) + 38px) 18px calc(36px + env(safe-area-inset-bottom))}
 .screen.on{display:block;animation:in .14s ease-out}
 @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* 입장 */
-.entry{padding-top:min(42vh,370px);text-align:center}
+.entry{padding-top:calc(min(92vw,420px) * .72 + 2vh);text-align:center}
 .kicker{font-size:13px;letter-spacing:.32em;color:rgba(255,255,255,.85)}
 .brand{font-family:var(--brush);font-weight:400;margin:6px 0 0;font-size:clamp(56px,18vw,88px);line-height:1.1;
   text-shadow:0 2px 14px rgba(0,30,90,.55)}
@@ -175,11 +169,34 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 .netbar{position:fixed;left:0;right:0;top:0;z-index:70;display:flex;gap:10px;align-items:center;justify-content:center;padding:10px 12px calc(10px);
   background:rgba(120,30,30,.94);font-family:var(--sans);font-size:13px;line-height:1.4}
 .netbar button{flex:none;background:var(--lime);color:var(--navy);font-weight:700;border-radius:99px;padding:6px 14px}
-@media (min-width:700px){.screen{padding-top:28px}}
+@media (min-width:700px){.screen{padding-top:48px}}
 </style>
 </head>
 <body>
-<div class="bg"><div class="dust"></div><div class="cross"></div></div>
+<div class="bg"><div class="dust"></div><svg class="cross" viewBox="0 0 512 512" aria-hidden="true">
+    <defs>
+      <radialGradient id="halo" cx="256" cy="210" r="260" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#bfe9ff" stop-opacity=".95"/><stop offset=".18" stop-color="#6fc0ff" stop-opacity=".5"/>
+        <stop offset=".55" stop-color="#2f7fe0" stop-opacity=".16"/><stop offset="1" stop-color="#2f7fe0" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".35" stop-color="#fff"/>
+        <stop offset=".75" stop-color="#cdeaff" stop-opacity=".7"/><stop offset="1" stop-color="#9fd4ff" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="flare" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#bfe9ff" stop-opacity="0"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#bfe9ff" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="glow" x="-100%" y="-30%" width="300%" height="160%"><feGaussianBlur stdDeviation="10"/></filter>
+      <filter id="glow2" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="22"/></filter>
+    </defs>
+    <circle cx="256" cy="210" r="260" fill="url(#halo)"/>
+    <g filter="url(#glow2)" opacity=".9"><rect x="236" y="70" width="40" height="330" rx="16" fill="#8fd0ff"/><rect x="120" y="190" width="272" height="40" rx="16" fill="#8fd0ff"/></g>
+    <g filter="url(#glow)"><rect x="240" y="76" width="32" height="360" rx="14" fill="#d8f0ff"/><rect x="132" y="194" width="248" height="30" rx="13" fill="#d8f0ff"/></g>
+    <rect x="246" y="80" width="20" height="400" rx="10" fill="url(#beam)"/>
+    <rect x="140" y="199" width="232" height="20" rx="10" fill="#fff"/>
+    <rect x="-150" y="204" width="812" height="10" rx="5" fill="url(#flare)"/>
+    <circle cx="256" cy="209" r="34" fill="#fff" opacity=".85" filter="url(#glow)"/>
+  </svg></div>
 
 <div id="app">
 
@@ -319,7 +336,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 (function () {
   'use strict';
   /* ★ Apps Script 웹앱 배포 URL(…/exec)을 여기에 붙여넣으세요 */
-  var API_URL = 'https://script.google.com/macros/s/AKfycbzEa9Mwzp6Ecy89Cd8QclmU6S-EbMotg-yZRWL2CTbo2sxor7vYQuyhOrCNE-lHP6YH/exec';
+  var API_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
   var DAYS = ['월', '화', '수', '목', '금', '토'];
   var SCREENS = ['entry', 'home', 'week', 'monthly', 'request'];
   var PARENT = { home: 'entry', week: 'home', monthly: 'home', request: 'home' };
