@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a4a9a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="그래서 기도">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>우리는교회 · 그래서 기도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Noto+Sans+KR:wght@400;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lime:#e6f23f; --navy:#082a5c; --line:rgba(255,255,255,.3);
+  --glass:linear-gradient(160deg,rgba(255,255,255,.17),rgba(255,255,255,.06));
+  --brush:'Nanum Brush Script','Noto Serif KR',cursive;
+  --serif:'Noto Serif KR',serif; --sans:'Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--serif);color:#fff;background:#0a4a9a;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+
+/* 배경: 청록 그라데이션 + 빛나는 십자가 + 먼지 입자 */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:
+  radial-gradient(120% 70% at 10% 0%,rgba(40,110,255,.55),transparent 60%),
+  radial-gradient(90% 60% at 100% 100%,rgba(30,170,70,.75),transparent 65%),
+  linear-gradient(160deg,#0b3f9c 0%,#0a5f9a 38%,#0b7a6a 68%,#157f3a 100%)}
+.dust{position:absolute;inset:0;opacity:.7;animation:tw 7s ease-in-out infinite;
+  background-image:
+   radial-gradient(circle,rgba(255,255,255,.6) 0 1px,transparent 2px),
+   radial-gradient(circle,rgba(180,230,255,.5) 0 1.5px,transparent 3px),
+   radial-gradient(circle,rgba(255,255,255,.28) 0 2px,transparent 6px);
+  background-size:90px 110px,170px 140px,260px 210px;
+  background-position:10px 20px,60px 70px,120px 30px}
+@keyframes tw{0%,100%{opacity:.5}50%{opacity:.85}}
+.cross{position:absolute;left:50%;top:5vh;width:0;height:min(36vh,320px);transition:opacity .25s}
+.cross::before{content:"";position:absolute;left:-5px;top:0;width:10px;height:100%;border-radius:6px;
+  background:linear-gradient(#fff,rgba(255,255,255,.92) 55%,rgba(255,255,255,0));
+  box-shadow:0 0 14px 6px rgba(150,210,255,.85),0 0 70px 26px rgba(80,160,255,.5)}
+.cross::after{content:"";position:absolute;left:-230px;width:460px;top:28%;height:6px;border-radius:6px;
+  background:linear-gradient(90deg,transparent,#fff 50%,transparent);
+  box-shadow:0 0 14px 5px rgba(150,210,255,.75)}
+body.inner .cross{opacity:.28}
+
+#app{position:relative;z-index:1;max-width:520px;margin:0 auto}
+.screen{display:none;min-height:100vh;min-height:100dvh;padding:18px 18px calc(36px + env(safe-area-inset-bottom))}
+.screen.on{display:block;animation:in .14s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* 입장 */
+.entry{padding-top:min(42vh,370px);text-align:center}
+.kicker{font-size:13px;letter-spacing:.32em;color:rgba(255,255,255,.85)}
+.brand{font-family:var(--brush);font-weight:400;margin:6px 0 0;font-size:clamp(56px,18vw,88px);line-height:1.1;
+  text-shadow:0 2px 14px rgba(0,30,90,.55)}
+.slogan{font-family:var(--brush);color:var(--lime);font-size:clamp(46px,15vw,72px);line-height:1.1;transform:rotate(-2deg);
+  margin:-4px 0 38px;text-shadow:0 2px 14px rgba(0,40,40,.5)}
+.enter{display:grid;gap:12px;max-width:340px;margin:0 auto}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 22px;border-radius:16px;
+  font-family:var(--sans);font-weight:700;font-size:18px;background:var(--lime);color:var(--navy);
+  box-shadow:0 6px 22px rgba(0,30,80,.35);transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1.5px solid var(--line);box-shadow:none}
+.btn.sm{min-height:46px;font-size:16px;border-radius:12px;padding:0 16px;white-space:nowrap}
+.btn.done{background:rgba(255,255,255,.2);color:#fff;border:1.5px solid var(--lime)}
+
+/* 상단 바 / 제목 */
+.top{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin-bottom:6px}
+.back{font-family:var(--sans);font-size:15px;color:#fff;padding:10px 14px 10px 6px;border-radius:12px}
+.back:active{background:rgba(255,255,255,.12)}
+.badge{font-family:var(--sans);font-size:12px;font-weight:700;padding:5px 11px;border-radius:99px;background:var(--lime);color:var(--navy)}
+.ptitle{font-family:var(--brush);font-weight:400;font-size:clamp(40px,12vw,54px);line-height:1.15;margin:4px 0 14px;text-shadow:0 2px 12px rgba(0,30,90,.5)}
+.ptitle em{font-style:normal;color:var(--lime)}
+
+/* 카드 */
+.card,.box{display:block;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:20px;background:var(--glass);padding:18px;margin-bottom:14px;
+  box-shadow:0 8px 26px rgba(0,25,70,.25)}
+button.card{display:flex;align-items:center;gap:16px;transition:transform .08s}
+button.card:active{transform:scale(.98)}
+.ico{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--navy);
+  font-family:var(--sans);font-weight:700;font-size:20px}
+.card h3{margin:0;font-family:var(--brush);font-weight:400;font-size:32px;line-height:1.15}
+.card p{margin:2px 0 0;font-size:13.5px;color:rgba(255,255,255,.82)}
+.arrow{margin-left:auto;font-size:26px;color:var(--lime)}
+
+.note{font-size:14.5px;color:rgba(255,255,255,.92);margin:0 0 14px}
+.lbl{font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--lime);margin:12px 0 4px;letter-spacing:.04em;display:block}
+.empty{font-size:14px;color:rgba(255,255,255,.7);margin:6px 0}
+.sec{font-family:var(--brush);font-size:30px;margin:22px 0 8px;line-height:1.2}
+.sec small{font-family:var(--sans);font-size:14px;color:var(--lime);margin-left:6px}
+.week{font-family:var(--sans);font-size:13px;color:rgba(255,255,255,.8);margin:-6px 0 12px}
+
+/* 333 */
+.names{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px}
+.nm{border:1.5px solid var(--line);border-radius:16px;background:var(--glass);padding:12px 6px;text-align:center;font-size:17px;font-weight:600;min-height:74px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;word-break:keep-all}
+.nm span{font-family:var(--sans);font-size:11px;color:var(--lime)}
+.nm-in,.inp{width:100%;min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:rgba(255,255,255,.12);padding:10px 12px;font-size:16px;font-family:var(--sans);outline:0}
+.nm-in{text-align:center;padding:10px 4px}
+.nm-in:focus,.inp:focus{border-color:var(--lime);background:rgba(255,255,255,.18)}
+::placeholder{color:rgba(255,255,255,.55)}
+textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
+.days{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:6px}
+.day{min-height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--glass);font-family:var(--sans);font-weight:700;font-size:17px;position:relative;transition:transform .08s}
+.day:active{transform:scale(.94)}
+.day.on{background:var(--lime);color:var(--navy);border-color:var(--lime)}
+.day.today::after{content:"";position:absolute;bottom:5px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+.cap{font-size:13.5px;color:rgba(255,255,255,.85);margin:8px 0 16px;text-align:center}
+.row{display:flex;gap:10px}
+.row .inp{flex:1;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:99px;background:rgba(230,242,63,.16);border:1.5px solid rgba(230,242,63,.55);font-size:15px;font-weight:600}
+.x{font-family:var(--sans);font-size:13px;color:#fff;opacity:.85;padding:0 2px}
+.mini{font-family:var(--sans);font-size:13px;font-weight:700;padding:6px 12px;border-radius:99px;border:1.5px solid var(--line);margin-left:auto;white-space:nowrap}
+
+/* 이달의 도고기도 */
+.mc-head{display:flex;align-items:center;gap:12px}
+.mc-head h3{margin:0;font-size:17px;font-weight:600;line-height:1.35;flex:1}
+.num{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--navy);font-family:var(--sans);font-weight:700}
+.pr{margin:0;white-space:pre-wrap;word-break:keep-all;font-size:15.5px}
+.tp{margin:0;padding-left:20px;font-size:15.5px;word-break:keep-all}
+.tp li{margin:3px 0}
+.pubs{list-style:none;margin:0;padding:0}
+.pubs li{display:flex;gap:8px;align-items:flex-start;padding:9px 0;border-top:1px dashed rgba(255,255,255,.22);font-size:15px;word-break:keep-all}
+.pubs li:first-child{border-top:0}
+.pubs b{flex:none;color:var(--lime);font-family:var(--sans);font-size:13.5px;padding-top:1px}
+.pubs span{flex:1}
+.ed-btns{display:flex;gap:8px;margin-top:10px}
+.ed-btns .btn{flex:1}
+
+/* 요청 */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 6px}
+.seg button{min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--glass);font-family:var(--sans);font-weight:700;font-size:15.5px}
+.seg button.on{background:var(--lime);color:var(--navy);border-color:var(--lime)}
+.help{font-size:13px;color:rgba(255,255,255,.82);margin:0 0 14px;min-height:20px}
+.field{margin-bottom:10px}
+.pst{border-top:1px dashed rgba(255,255,255,.25);padding:12px 0}
+.pst:first-child{border-top:0}
+.pst-h{display:flex;gap:10px;align-items:center;font-family:var(--sans);font-size:13px}
+.pst-h b{font-size:15px}
+.pst-h span{color:rgba(255,255,255,.7);flex:1}
+.pst p{margin:6px 0 0;white-space:pre-wrap;font-size:15.5px;word-break:keep-all}
+.divider{height:1px;background:var(--line);margin:22px 0}
+
+/* 모달 / 키패드 / 토스트 */
+.modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(3,15,40,.62)}
+.sheet{position:relative;width:100%;max-width:340px;border-radius:24px;padding:24px 20px 20px;border:1.5px solid var(--line);
+  background:linear-gradient(160deg,#10509e,#0b6a74 60%,#14733f);box-shadow:0 20px 60px rgba(0,0,0,.45);animation:in .12s ease-out}
+.close{position:absolute;right:10px;top:8px;width:40px;height:40px;font-size:26px;opacity:.85}
+.kp-title{text-align:center;font-family:var(--brush);font-size:34px;line-height:1.1}
+.dots{display:flex;justify-content:center;gap:14px;margin:16px 0 6px;min-height:20px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.7)}
+.dots i.f{background:var(--lime);border-color:var(--lime)}
+.dots.shake{animation:sh .4s}
+@keyframes sh{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.kp-msg{text-align:center;font-family:var(--sans);font-size:13.5px;min-height:20px;margin-bottom:8px;color:#ffe58a}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.keys button{min-height:58px;border-radius:16px;background:rgba(255,255,255,.14);border:1.5px solid var(--line);font-family:var(--sans);font-size:24px;font-weight:700}
+.keys button:active{background:rgba(255,255,255,.3)}
+.keys .fn{font-size:16px}
+.keys .ok{background:var(--lime);color:var(--navy);border-color:var(--lime)}
+.ask-msg{text-align:center;font-size:16.5px;margin:6px 0 18px;word-break:keep-all}
+.toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:60;opacity:0;pointer-events:none;
+  background:rgba(8,30,70,.94);border:1.5px solid var(--line);color:#fff;font-family:var(--sans);font-size:14.5px;padding:12px 18px;border-radius:99px;max-width:90vw;text-align:center;transition:opacity .15s,transform .15s}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (min-width:700px){.screen{padding-top:28px}}
+</style>
+</head>
+<body>
+<div class="bg"><div class="dust"></div><div class="cross"></div></div>
+
+<div id="app">
+
+  <!-- 입장 -->
+  <section id="s-entry" class="screen on">
+    <div class="entry">
+      <div class="kicker">SO, WE PRAY</div>
+      <h1 class="brand">우리는교회</h1>
+      <div class="slogan">[그래서 기도]</div>
+      <div class="enter">
+        <button class="btn" id="btn-member" type="button">성도 입장</button>
+        <button class="btn ghost" id="btn-admin" type="button">🔒 관리자 입장</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 홈: 3개 항목 -->
+  <section id="s-home" class="screen">
+    <div class="top">
+      <button class="back" type="button" data-go="entry">‹ 처음으로</button>
+      <span class="badge adm-only" hidden>관리자 모드</span>
+    </div>
+    <h2 class="ptitle">[그래서 <em>기도</em>]</h2>
+    <button class="card" type="button" data-go="week">
+      <span class="ico">3</span>
+      <span><h3>이번 주 [3.3.3]</h3><p>3명 · 3일 · 3분 기도</p></span>
+      <span class="arrow">›</span>
+    </button>
+    <button class="card" type="button" data-go="monthly">
+      <span class="ico">月</span>
+      <span><h3>이달의 도고기도</h3><p>하나님 나라 · 이 땅 · 교회 · 성도</p></span>
+      <span class="arrow">›</span>
+    </button>
+    <button class="card" type="button" data-go="request">
+      <span class="ico">+</span>
+      <span><h3>도고기도 요청</h3><p>나누고 싶은 기도제목을 남겨요</p></span>
+      <span class="arrow">›</span>
+    </button>
+  </section>
+
+  <!-- 이번 주 333 -->
+  <section id="s-week" class="screen">
+    <div class="top">
+      <button class="back" type="button" data-go="home">‹ 뒤로</button>
+      <span class="badge adm-only" hidden>관리자 모드</span>
+    </div>
+    <h2 class="ptitle">이번 주 [3.3.3]</h2>
+    <div class="week" id="wk-label"></div>
+    <p class="note">*333이란? 3명을 위해서 3일 동안 1명당 1분씩 총 3분을 기도하는 운동입니다.</p>
+
+    <div class="names" id="wk-names"></div>
+    <button class="btn sm adm-only" id="wk-names-save" type="button" hidden style="width:100%;margin:6px 0 4px">333 명단 저장</button>
+
+    <div class="sec" style="margin-top:20px">기도한 날</div>
+    <div class="days" id="wk-days"></div>
+    <div class="cap">기도한 날을 체크해주세요</div>
+
+    <div class="row">
+      <input class="inp" id="wk-name" type="text" maxlength="20" placeholder="기도자 이름" autocomplete="name">
+      <button class="btn sm" id="wk-complete" type="button">기도 완료</button>
+    </div>
+
+    <div class="sec">기도를 완료한 성도 <small id="wk-count">0</small></div>
+    <div class="chips" id="wk-done"></div>
+  </section>
+
+  <!-- 이달의 도고기도 -->
+  <section id="s-monthly" class="screen">
+    <div class="top">
+      <button class="back" type="button" data-go="home">‹ 뒤로</button>
+      <span class="badge adm-only" hidden>관리자 모드</span>
+    </div>
+    <h2 class="ptitle" id="mo-title">이달의 도고기도</h2>
+    <div class="box" id="mc-0"></div>
+    <div class="box" id="mc-1"></div>
+    <div class="box" id="mc-2"></div>
+    <div class="box" id="mc-3"></div>
+  </section>
+
+  <!-- 도고기도 요청 -->
+  <section id="s-request" class="screen">
+    <div class="top">
+      <button class="back" type="button" data-go="home">‹ 뒤로</button>
+      <span class="badge adm-only" hidden>관리자 모드</span>
+    </div>
+    <h2 class="ptitle">도고기도 요청</h2>
+    <div class="box">
+      <div class="field"><input class="inp" id="rq-name" type="text" maxlength="20" placeholder="이름 (비워두면 익명)" autocomplete="name"></div>
+      <div class="field"><textarea class="inp" id="rq-topic" maxlength="500" placeholder="기도제목을 적어주세요"></textarea></div>
+      <div class="seg" id="rq-seg">
+        <button type="button" data-scope="all" class="on">전체공개</button>
+        <button type="button" data-scope="pastor">목회자공개</button>
+      </div>
+      <p class="help" id="rq-help"></p>
+      <button class="btn" id="rq-submit" type="button" style="width:100%">기도 요청하기</button>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn ghost" id="pst-btn" type="button" style="width:100%">🔒 목회자 공개 요청 보기 (관리자)</button>
+    <div class="box" id="pst-list" hidden style="margin-top:14px"></div>
+  </section>
+</div>
+
+<!-- 관리자 비밀번호 키패드 -->
+<div id="kp" class="modal" hidden>
+  <div class="sheet">
+    <button class="close" id="kp-close" type="button" aria-label="닫기">×</button>
+    <div class="kp-title">관리자 비밀번호</div>
+    <div class="dots" id="kp-dots"></div>
+    <div class="kp-msg" id="kp-msg"></div>
+    <div class="keys">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-k="del" class="fn" aria-label="지우기">⌫</button>
+      <button type="button" data-k="0">0</button>
+      <button type="button" data-k="ok" class="fn ok">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 확인 창 -->
+<div id="ask" class="modal" hidden>
+  <div class="sheet">
+    <p class="ask-msg" id="ask-msg"></p>
+    <div class="ed-btns">
+      <button class="btn ghost sm" id="ask-no" type="button">취소</button>
+      <button class="btn sm" id="ask-yes" type="button">삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+  /* ★ Apps Script 웹앱 배포 URL(…/exec)을 여기에 붙여넣으세요 */
+  var API_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
+  var DAYS = ['월', '화', '수', '목', '금', '토'];
+  var SCREENS = ['entry', 'home', 'week', 'monthly', 'request'];
+  var PARENT = { home: 'entry', week: 'home', monthly: 'home', request: 'home' };
+  var HELP = {
+    all: '전체공개: 이달의 도고기도 ‘성도를 위한 기도’에 바로 올라가요.',
+    pastor: '목회자공개: 목회자(관리자)만 볼 수 있어요.'
+  };
+
+  var DATA = null;
+  var ADMIN = false, PW = '', cur = 'entry';
+  var lastFetch = 0, inflight = 0;
+  var editing = {}, scope = 'all', pstList = [];
+
+  var store = (function () {
+    try { var k = '__p'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return localStorage; }
+    catch (e) { var m = {}; return { getItem: function (k) { return k in m ? m[k] : null; }, setItem: function (k, v) { m[k] = String(v); } }; }
+  })();
+
+  try { DATA = JSON.parse(store.getItem('cache_data') || 'null'); } catch (e) { DATA = null; }
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('on'); }, 2400);
+  }
+
+  /* ── 서버 호출 ── */
+  function call(name, args, ok, fail) {
+    if (!API_URL || API_URL.indexOf('PASTE_') === 0) { toast('index.html 의 API_URL 을 설정해 주세요.'); if (fail) fail(); return; }
+    // text/plain 으로 보내 CORS 사전요청(preflight)을 피함 — Apps Script 웹앱 표준 방식
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn: name, args: args }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j && j.error) throw new Error(j.error);
+        if (ok) ok(j.result);
+      })
+      .catch(function () { toast('연결이 불안정해요. 잠시 후 다시 시도해 주세요.'); if (fail) fail(); });
+  }
+  function write(name, args, ok) {
+    inflight++;
+    call(name, args, function (res) { inflight--; if (ok) ok(res); else applyData(res); }, function () { inflight--; });
+  }
+  function authFail(res) {
+    if (res && res.auth) {
+      ADMIN = false; PW = ''; syncAdmin(); toast(res.msg || '관리자 인증이 필요해요.'); go('entry'); return true;
+    }
+    return false;
+  }
+  function applyData(res) {
+    if (!res || authFail(res)) return;
+    if (res.ok === false) { toast(res.msg || '처리하지 못했어요.'); return; }
+    if (res.data) setData(res.data);
+  }
+  function setData(d) { DATA = d; lastFetch = Date.now(); try { store.setItem('cache_data', JSON.stringify(d)); } catch (e) {} renderAll(); }
+  function refresh() {
+    if (Date.now() - lastFetch < 10000) return;
+    lastFetch = Date.now();
+    call('getPublicData', [], function (d) { if (d && d.week && inflight === 0) setData(d); });
+  }
+
+  /* ── 화면 이동 (서버 왕복 없음) ── */
+  function go(name, noPush) {
+    cur = name;
+    SCREENS.forEach(function (s) { $('#s-' + s).classList.toggle('on', s === name); });
+    document.body.classList.toggle('inner', name !== 'entry');
+    window.scrollTo(0, 0);
+    if (name === 'entry') {
+      ADMIN = false; PW = ''; syncAdmin(); $('#pst-list').hidden = true; pstList = [];
+    }
+    if (name === 'week' || name === 'monthly' || name === 'request') refresh();
+    if (!noPush) { try { history.pushState({ s: name }, ''); } catch (e) {} }
+  }
+  window.addEventListener('popstate', function () {
+    if (!$('#kp').hidden) { closeKp(); try { history.pushState({ s: cur }, ''); } catch (e) {} return; }
+    var p = PARENT[cur];
+    if (p) go(p, true); else { try { history.pushState({ s: cur }, ''); } catch (e) {} }
+  });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && cur !== 'entry') refresh(); });
+
+  function syncAdmin() {
+    $$('.adm-only').forEach(function (e) { e.hidden = !ADMIN; });
+    if (DATA) renderAll();
+  }
+
+  /* ── 렌더링 ── */
+  function renderAll() { if (!DATA) return; renderWeek(); renderMonthly(); }
+
+  function renderWeek() {
+    var w = DATA.week;
+    $('#wk-label').textContent = w.label;
+    renderNames(); renderDays(); renderDone(); setDoneBtn();
+  }
+  function renderNames() {
+    var box = $('#wk-names'), w = DATA.week;
+    if (box.contains(document.activeElement) && ADMIN) return;
+    if (ADMIN) {
+      box.innerHTML = [0, 1, 2].map(function (i) {
+        return '<input class="nm-in" maxlength="20" placeholder="이름 ' + (i + 1) + '" value="' + esc(w.names[i] || '') + '">';
+      }).join('');
+    } else {
+      box.innerHTML = [0, 1, 2].map(function (i) {
+        return '<div class="nm"><span>' + (i + 1) + '</span>' + esc(w.names[i] || '미정') + '</div>';
+      }).join('');
+    }
+  }
+  function myDays() { try { return JSON.parse(store.getItem('d_' + DATA.week.key) || '[]'); } catch (e) { return []; } }
+  function renderDays() {
+    var md = myDays(), td = new Date().getDay();
+    $('#wk-days').innerHTML = DAYS.map(function (d, i) {
+      return '<button type="button" class="day' + (md.indexOf(i) > -1 ? ' on' : '') + (td === i + 1 ? ' today' : '') + '" data-i="' + i + '">' + d + '</button>';
+    }).join('');
+  }
+  function renderDone() {
+    var L = DATA.week.done;
+    $('#wk-count').textContent = L.length + '명';
+    $('#wk-done').innerHTML = L.length ? L.map(function (x) {
+      return '<span class="chip">' + esc(x.n) + (ADMIN ? '<button class="x" type="button" data-dn="' + esc(x.n) + '" aria-label="삭제">✕</button>' : '') + '</span>';
+    }).join('') : '<p class="empty">아직 기도를 마친 성도가 없어요. 첫 번째가 되어 주세요!</p>';
+  }
+  function setDoneBtn() {
+    var b = $('#wk-complete'), n = $('#wk-name').value.trim();
+    var is = n && store.getItem('c_' + DATA.week.key) === n;
+    b.textContent = is ? '✓ 완료됨' : '기도 완료';
+    b.classList.toggle('done', !!is);
+  }
+
+  function lines(t) {
+    return String(t).split(/\r?\n/).map(function (s) { return s.replace(/^\s*[-•·*]\s*/, '').trim(); })
+      .filter(Boolean).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('');
+  }
+  function renderMonthly() {
+    $('#mo-title').textContent = DATA.month.m + '월의 도고기도';
+    for (var i = 0; i < 4; i++) renderCard(i);
+  }
+  function renderCard(i) {
+    if (editing[i]) return;
+    var it = DATA.month.items[i], el = $('#mc-' + i);
+    var h = '<div class="mc-head"><span class="num">' + (i + 1) + '</span><h3>' + esc(it.title) + '</h3>' +
+      (ADMIN ? '<button class="mini" type="button" data-edit="' + i + '">수정</button>' : '') + '</div>';
+    if (it.prayer) h += '<span class="lbl">기도</span><p class="pr">' + esc(it.prayer) + '</p>';
+    if (it.topics) h += '<span class="lbl">기도제목</span><ul class="tp">' + lines(it.topics) + '</ul>';
+    if (!it.prayer && !it.topics && i !== 3) h += '<p class="empty" style="margin-top:10px">아직 등록된 내용이 없어요.</p>';
+    if (i === 3) {
+      var P = DATA.month.pub;
+      h += '<span class="lbl">함께 나눈 기도제목</span>';
+      h += P.length ? '<ul class="pubs">' + P.map(function (p) {
+        return '<li><b>' + esc(p.n) + '</b><span>' + esc(p.t) + '</span>' +
+          (ADMIN ? '<button class="x" type="button" data-rid="' + esc(p.id) + '" aria-label="삭제">✕</button>' : '') + '</li>';
+      }).join('') + '</ul>' : '<p class="empty">아직 올라온 기도제목이 없어요. ‘도고기도 요청’에서 전체공개로 올리면 여기에 나타나요.</p>';
+    }
+    el.innerHTML = h;
+  }
+  function editCard(i) {
+    editing[i] = true;
+    var it = DATA.month.items[i];
+    $('#mc-' + i).innerHTML =
+      '<div class="mc-head"><span class="num">' + (i + 1) + '</span><h3>' + esc(it.title) + '</h3></div>' +
+      '<span class="lbl">기도</span><textarea class="inp" id="ep-' + i + '" maxlength="1500" placeholder="이달의 기도문">' + esc(it.prayer) + '</textarea>' +
+      '<span class="lbl">기도제목 (한 줄에 하나씩)</span><textarea class="inp" id="et-' + i + '" maxlength="1500" placeholder="기도제목">' + esc(it.topics) + '</textarea>' +
+      '<div class="ed-btns"><button class="btn ghost sm" type="button" data-ecancel="' + i + '">취소</button><button class="btn sm" type="button" data-esave="' + i + '">저장</button></div>';
+  }
+  function saveCard(i) {
+    var p = $('#ep-' + i).value, t = $('#et-' + i).value;
+    DATA.month.items[i].prayer = p.trim(); DATA.month.items[i].topics = t.trim();
+    editing[i] = false; renderCard(i); toast('저장했어요.');
+    write('saveMonthlyItem', [PW, i, p, t]);
+  }
+
+  /* ── 키패드 ── */
+  var kp = { buf: '', cb: null, busy: false };
+  function drawDots() {
+    var n = Math.max(4, kp.buf.length), h = '';
+    for (var i = 0; i < n; i++) h += '<i class="' + (i < kp.buf.length ? 'f' : '') + '"></i>';
+    $('#kp-dots').innerHTML = h;
+  }
+  function openKp(cb) { kp.buf = ''; kp.cb = cb; kp.busy = false; $('#kp-msg').textContent = ''; drawDots(); $('#kp').hidden = false; }
+  function closeKp() { $('#kp').hidden = true; }
+  function kpKey(k) {
+    if (kp.busy) return;
+    if (k === 'del') kp.buf = kp.buf.slice(0, -1);
+    else if (k === 'ok') return kpSubmit();
+    else if (kp.buf.length < 12) kp.buf += k;
+    drawDots();
+  }
+  function kpSubmit() {
+    if (!kp.buf) return;
+    kp.busy = true; $('#kp-msg').textContent = '확인 중…';
+    var tried = kp.buf;
+    call('verifyAdmin', [tried], function (r) {
+      kp.busy = false;
+      if (r && r.ok) {
+        PW = tried; ADMIN = true; closeKp(); syncAdmin();
+        if (kp.cb) kp.cb();
+      } else {
+        $('#kp-msg').textContent = r && r.locked ? '시도가 많아 잠시 후 다시 해주세요.' : '비밀번호가 맞지 않아요.';
+        kp.buf = ''; drawDots();
+        var d = $('#kp-dots'); d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake');
+      }
+    }, function () { kp.busy = false; $('#kp-msg').textContent = ''; });
+  }
+
+  /* ── 확인 창 ── */
+  var askCb = null;
+  function ask(msg, cb) { $('#ask-msg').textContent = msg; askCb = cb; $('#ask').hidden = false; }
+  function askClose() { $('#ask').hidden = true; askCb = null; }
+
+  /* ── 목회자 공개 요청 ── */
+  function showPastoral() {
+    var b = $('#pst-list'); b.hidden = false; b.innerHTML = '<p class="empty">불러오는 중…</p>';
+    call('getPastoralRequests', [PW], function (res) {
+      if (authFail(res)) return;
+      pstList = (res && res.list) || []; renderPst();
+    });
+  }
+  function renderPst() {
+    var b = $('#pst-list'); b.hidden = false;
+    b.innerHTML = '<span class="lbl" style="margin-top:0">목회자 공개 요청 · ' + pstList.length + '건</span>' + (pstList.length ? pstList.map(function (x) {
+      return '<div class="pst"><div class="pst-h"><b>' + esc(x.n) + '</b><span>' + esc(x.ts) + '</span><button class="x" type="button" data-pid="' + esc(x.id) + '">삭제</button></div><p>' + esc(x.t) + '</p></div>';
+    }).join('') : '<p class="empty">접수된 목회자 공개 요청이 없어요.</p>');
+  }
+
+  /* ── 이벤트 ── */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('button') : null;
+    if (!t) return;
+
+    if (t.hasAttribute('data-go')) { go(t.getAttribute('data-go')); return; }
+
+    if (t.id === 'btn-member') { go('home'); return; }
+    if (t.id === 'btn-admin') { openKp(function () { go('home'); }); return; }
+
+    if (t.hasAttribute('data-k')) { kpKey(t.getAttribute('data-k')); return; }
+    if (t.id === 'kp-close') { closeKp(); return; }
+    if (t.id === 'ask-no') { askClose(); return; }
+    if (t.id === 'ask-yes') { var cb = askCb; askClose(); if (cb) cb(); return; }
+
+    // 333
+    if (t.classList.contains('day')) {
+      var i = Number(t.getAttribute('data-i')), md = myDays(), p = md.indexOf(i);
+      if (p > -1) md.splice(p, 1); else md.push(i);
+      store.setItem('d_' + DATA.week.key, JSON.stringify(md));
+      t.classList.toggle('on'); return;
+    }
+    if (t.id === 'wk-complete') {
+      var n = $('#wk-name').value.trim();
+      if (!n) { toast('기도자 이름을 입력해 주세요.'); $('#wk-name').focus(); return; }
+      var md2 = myDays().sort(function (a, b) { return a - b; });
+      var rec = { n: n, d: md2.map(function (k) { return DAYS[k]; }).join(','), t: '' };
+      var L = DATA.week.done, at = -1;
+      for (var k = 0; k < L.length; k++) if (L[k].n === n) at = k;
+      if (at < 0) L.push(rec); else L[at] = rec;
+      store.setItem('p_name', n); store.setItem('c_' + DATA.week.key, n);
+      renderDone(); setDoneBtn(); toast('기도 완료! 수고하셨어요 🙏');
+      write('completePrayer', [n, md2]);
+      return;
+    }
+    if (t.id === 'wk-names-save') {
+      var ins = $$('#wk-names .nm-in').map(function (x) { return x.value.trim(); });
+      DATA.week.names = ins; toast('333 명단을 저장했어요.');
+      write('saveWeekNames', [PW, ins]); return;
+    }
+    if (t.hasAttribute('data-dn')) {
+      var dn = t.getAttribute('data-dn');
+      ask(dn + ' 님의 완료 기록을 삭제할까요?', function () {
+        DATA.week.done = DATA.week.done.filter(function (x) { return x.n !== dn; }); renderDone();
+        write('deleteCompletion', [PW, dn]);
+      });
+      return;
+    }
+
+    // 이달의 도고기도
+    if (t.hasAttribute('data-edit')) { editCard(Number(t.getAttribute('data-edit'))); return; }
+    if (t.hasAttribute('data-ecancel')) { var ci = Number(t.getAttribute('data-ecancel')); editing[ci] = false; renderCard(ci); return; }
+    if (t.hasAttribute('data-esave')) { saveCard(Number(t.getAttribute('data-esave'))); return; }
+    if (t.hasAttribute('data-rid')) {
+      var rid = t.getAttribute('data-rid');
+      ask('이 기도제목을 삭제할까요?', function () {
+        DATA.month.pub = DATA.month.pub.filter(function (x) { return x.id !== rid; }); renderCard(3);
+        write('deleteRequest', [PW, rid]);
+      });
+      return;
+    }
+
+    // 요청
+    if (t.hasAttribute('data-scope')) {
+      scope = t.getAttribute('data-scope');
+      $$('#rq-seg button').forEach(function (b) { b.classList.toggle('on', b === t); });
+      $('#rq-help').textContent = HELP[scope]; return;
+    }
+    if (t.id === 'rq-submit') {
+      var name = $('#rq-name').value.trim(), topic = $('#rq-topic').value.trim();
+      if (!topic) { toast('기도제목을 입력해 주세요.'); $('#rq-topic').focus(); return; }
+      store.setItem('p_name', name);
+      if (scope === 'all') { DATA.month.pub.unshift({ id: 'tmp' + Date.now(), n: name || '익명', t: topic }); renderCard(3); }
+      $('#rq-topic').value = '';
+      toast(scope === 'all' ? '접수됐어요. ‘성도를 위한 기도’에 올라갔어요.' : '접수됐어요. 목회자에게만 전달돼요.');
+      write('submitRequest', [name, topic, scope]);
+      return;
+    }
+    if (t.id === 'pst-btn') {
+      if (ADMIN) showPastoral(); else openKp(showPastoral);
+      return;
+    }
+    if (t.hasAttribute('data-pid')) {
+      var pid = t.getAttribute('data-pid');
+      ask('이 요청을 삭제할까요?', function () {
+        pstList = pstList.filter(function (x) { return x.id !== pid; }); renderPst();
+        write('deleteRequest', [PW, pid]);
+      });
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if ($('#kp').hidden) return;
+    if (/^[0-9]$/.test(e.key)) kpKey(e.key);
+    else if (e.key === 'Backspace') kpKey('del');
+    else if (e.key === 'Enter') kpKey('ok');
+    else if (e.key === 'Escape') closeKp();
+  });
+  $('#wk-name').addEventListener('input', setDoneBtn);
+
+  /* ── 시작 ── */
+  var saved = store.getItem('p_name') || '';
+  $('#wk-name').value = saved; $('#rq-name').value = saved;
+  $('#rq-help').textContent = HELP.all;
+  try { history.replaceState({ s: 'entry' }, ''); } catch (e) {}
+  if (DATA) renderAll();
+  else {
+    $('#wk-done').innerHTML = '<p class="empty">불러오는 중…</p>';
+    for (var q = 0; q < 4; q++) $('#mc-' + q).innerHTML = '<p class="empty">불러오는 중…</p>';
+  }
+  // 입장 화면을 보는 동안 미리 최신 데이터를 받아 둠
+  call('getPublicData', [], function (d) { if (d && d.week) setData(d); });
+})();
+</script>
+</body>
+</html>
