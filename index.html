@@ -25,17 +25,16 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{margin:0;min-height:100%;overscroll-behavior:none}
-html{background:linear-gradient(160deg,#0b3f9c 0%,#0a5f9a 38%,#0b7a6a 68%,#157f3a 100%) fixed #157f3a}
-body{font-family:var(--serif);color:#fff;background:transparent;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html,body{margin:0;min-height:100%}
+html{background-color:#157f3a;background-image:radial-gradient(120% 70% at 10% 0%,rgba(40,110,255,.55),transparent 60%),
+  radial-gradient(90% 60% at 100% 100%,rgba(30,170,70,.75),transparent 65%),
+  linear-gradient(160deg,#0b3f9c 0%,#0a5f9a 38%,#0b7a6a 68%,#157f3a 100%)}
+body{font-family:var(--serif);color:#fff;background:transparent;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative;min-height:100vh;min-height:100dvh}
 button,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
 
 /* 배경: 청록 그라데이션 + 빛나는 십자가 + 먼지 입자 */
-.bg{position:fixed;left:0;right:0;top:0;bottom:-200px;z-index:0;overflow:hidden;background:
-  radial-gradient(120% 70% at 10% 0%,rgba(40,110,255,.55),transparent 60%),
-  radial-gradient(90% 60% at 100% 100%,rgba(30,170,70,.75),transparent 65%),
-  linear-gradient(160deg,#0b3f9c 0%,#0a5f9a 38%,#0b7a6a 68%,#157f3a 100%)}
+.bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
 .dust{position:absolute;inset:0;opacity:.7;animation:tw 7s ease-in-out infinite;
   background-image:
    radial-gradient(circle,rgba(255,255,255,.6) 0 1px,transparent 2px),
@@ -96,7 +95,7 @@ button.card:active{transform:scale(.98)}
 
 /* 333 */
 .names{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px}
-.nm{border:1.5px solid var(--line);border-radius:16px;background:var(--glass);padding:12px 6px;text-align:center;font-size:17px;font-weight:600;min-height:74px;
+.nm{border:1.5px solid var(--line);border-radius:16px;background:var(--glass);padding:12px 6px;text-align:center;font-size:17px;font-weight:600;min-height:52px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;word-break:keep-all}
 .nm span{font-family:var(--sans);font-size:11px;color:var(--lime)}
 .nm-in,.inp{width:100%;min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:rgba(255,255,255,.12);padding:10px 12px;font-size:16px;font-family:var(--sans);outline:0}
@@ -109,8 +108,13 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 .day:active{transform:scale(.94)}
 .day.on{background:var(--lime);color:var(--navy);border-color:var(--lime)}
 .day.today::after{content:"";position:absolute;bottom:5px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
-.phs{margin:0 0 6px}
-.ph{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;border:1.5px solid var(--line);background:var(--glass);display:flex;align-items:center;justify-content:center}
+.phs{margin:0 0 8px}
+.tps{margin:0 0 6px;align-items:stretch}
+.tp-v{border:1.5px solid var(--line);border-radius:14px;background:var(--glass);padding:9px 8px;font-size:13.5px;line-height:1.45;white-space:pre-wrap;word-break:keep-all;min-height:84px}
+.tp-v.empty{color:rgba(255,255,255,.5);font-family:var(--sans);font-size:12px}
+.tp-in{width:100%;min-height:110px;border-radius:14px;border:1.5px solid var(--line);background:rgba(255,255,255,.12);padding:9px 8px;font-size:16px;line-height:1.4;font-family:var(--sans);outline:0;resize:vertical}
+.tp-in:focus{border-color:var(--lime);background:rgba(255,255,255,.18)}
+.ph{position:relative;aspect-ratio:10/11;border-radius:16px;overflow:hidden;border:1.5px solid var(--line);background:var(--glass);display:flex;align-items:center;justify-content:center}
 .ph-img{position:absolute;inset:0;width:100%;height:100%;padding:0}
 .ph-img img{width:100%;height:100%;object-fit:cover;display:block}
 .ph-empty{font-family:var(--sans);font-size:12px;color:rgba(255,255,255,.55);text-align:center}
@@ -263,6 +267,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 
     <div class="names" id="wk-names"></div>
     <div class="names phs" id="wk-photos"></div>
+    <div class="names tps" id="wk-topics"></div>
     <input type="file" id="ph-file" accept="image/*" hidden>
     <button class="btn sm adm-only" id="wk-names-save" type="button" hidden style="width:100%;margin:6px 0 4px">명단 저장</button>
 
@@ -353,7 +358,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
 (function () {
   'use strict';
   /* ★ Apps Script 웹앱 배포 URL(…/exec)을 여기에 붙여넣으세요 */
-  var API_URL = 'https://script.google.com/macros/s/AKfycbzE2x7Do9hLPifD5Stb-lWYf_9or4IE1o-rnag7yuSv7XE5ZUdFkqI-RnjTkBAAgFGo/exec';
+  var API_URL = 'https://script.google.com/macros/s/AKfycbxmerNYw9eBmwNWv24vxUJ8q7P90JUOqDhyY-0pSGRU8h4CIQ0p3EI6vs7V4ysXNl_z/exec';
   var DAYS = ['주일', '월', '화', '수', '목', '금', '토'];
   var SCREENS = ['entry', 'home', 'week', 'monthly', 'request'];
   var PARENT = { home: 'entry', week: 'home', monthly: 'home', request: 'home' };
@@ -382,7 +387,7 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     return {
       week: { key: s.getFullYear() + '-' + p2(s.getMonth() + 1) + '-' + p2(s.getDate()),
               label: (s.getMonth() + 1) + '월 ' + s.getDate() + '일 ~ ' + (e.getMonth() + 1) + '월 ' + e.getDate() + '일',
-              names: ['', '', ''], done: [], photos: ['', '', ''] },
+              names: ['', '', ''], done: [], photos: ['', '', ''], topics: ['', '', ''] },
       month: { m: new Date().getMonth() + 1, items: TITLES.map(function (t) { return { title: t, prayer: '', topics: '' }; }), pub: [] },
       sk: true
     };
@@ -489,21 +494,35 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
   function renderWeek() {
     var w = DATA.week;
     $('#wk-label').textContent = w.label;
-    renderNames(); renderPhotos(); renderDays(); renderDone(); setDoneBtn();
+    renderNames(); renderPhotos(); renderTopics(); renderDays(); renderDone(); setDoneBtn();
   }
   function renderNames() {
     var box = $('#wk-names'), w = DATA.week;
-    if (box.contains(document.activeElement) && ADMIN) return;
+    // 관리자가 입력 중인 글자가 사라지지 않도록, 입력칸은 처음 한 번만 만든다
+    var mode = ADMIN ? (DATA.sk ? 'a-sk' : 'a') : 'm';
+    if (ADMIN && box.getAttribute('data-mode') === mode) return;
+    box.setAttribute('data-mode', mode);
     if (ADMIN) {
       box.innerHTML = [0, 1, 2].map(function (i) {
-        return '<input class="nm-in" maxlength="20" placeholder="이름 ' + (i + 1) + '" value="' + esc(w.names[i] || '') + '">';
+        return '<input class="nm-in" maxlength="20" placeholder="이름" value="' + esc(w.names[i] || '') + '">';
       }).join('');
     } else {
       box.innerHTML = [0, 1, 2].map(function (i) {
-        return '<div class="nm"><span>' + (i + 1) + '</span>' + esc(w.names[i] || '미정') + '</div>';
+        return '<div class="nm">' + esc(w.names[i] || '미정') + '</div>';
       }).join('');
     }
   }
+  function renderTopics() {
+    var box = $('#wk-topics'), T = DATA.week.topics || ['', '', ''];
+    var mode = ADMIN ? (DATA.sk ? 'a-sk' : 'a') : 'm';
+    if (ADMIN && box.getAttribute('data-mode') === mode) return;
+    box.setAttribute('data-mode', mode);
+    box.innerHTML = [0, 1, 2].map(function (i) {
+      if (ADMIN) return '<textarea class="tp-in" maxlength="300" placeholder="기도제목">' + esc(T[i] || '') + '</textarea>';
+      return T[i] ? '<div class="tp-v">' + esc(T[i]) + '</div>' : '<div class="tp-v empty">기도제목</div>';
+    }).join('');
+  }
+
   /* ── 사진 ── */
   var PHOTO = [null, null, null], phFetching = ['', '', ''];
   for (var pi = 0; pi < 3; pi++) { try { var po = JSON.parse(store.getItem('ph_' + pi) || 'null'); if (po && po.v && po.data) PHOTO[pi] = po; } catch (e) {} }
@@ -742,8 +761,9 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.5}
     }
     if (t.id === 'wk-names-save') {
       var ins = $$('#wk-names .nm-in').map(function (x) { return x.value.trim(); });
-      DATA.week.names = ins; toast('명단을 저장했어요.');
-      write('saveWeekNames', [PW, ins]); return;
+      var tops = $$('#wk-topics .tp-in').map(function (x) { return x.value.trim(); });
+      DATA.week.names = ins; DATA.week.topics = tops; toast('명단을 저장했어요.');
+      write('saveWeekNames', [PW, ins, tops]); return;
     }
     if (t.hasAttribute('data-dn')) {
       var dn = t.getAttribute('data-dn');
